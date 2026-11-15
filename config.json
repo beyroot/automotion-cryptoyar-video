@@ -22,11 +22,16 @@
     ]
   },
   "schedule": {
-    "startDate": "2026-11-16",
+    "startDate": "2026-11-15",
     "pulseWeekdays": [
       5
     ],
-    "timezone": "Asia/Tehran"
+    "timezone": "Asia/Tehran",
+    "slots": [
+      "19:00",
+      "22:00"
+    ],
+    "pulseSlot": 2
   },
   "video": {
     "width": 1080,

@@ -2,10 +2,12 @@ name: CryptoYar daily motion
 
 on:
   schedule:
-    - cron: "30 15 * * *"   # هر روز ۱۹:۰۰ به وقت تهران
+    - cron: "30 15 * * *"   # ۱۹:۰۰ تهران (کلیپ اول)
+    - cron: "30 18 * * *"   # ۲۲:۰۰ تهران (کلیپ دوم)
   workflow_dispatch:
     inputs:
       id: { description: "شناسهٔ اپیزود (اختیاری، مثل ep07)", required: false }
+      slot: { description: "نوبت: 1 = ساعت ۱۹، 2 = ساعت ۲۲ (اختیاری)", required: false }
       publish: { description: "منتشر شود؟", type: boolean, default: true }
 
 jobs:
@@ -26,8 +28,9 @@ jobs:
           IG_USER_ID: ${{ secrets.IG_USER_ID }}
           IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
           EP_ID: ${{ inputs.id }}
+          SLOT: ${{ inputs.slot || (github.event.schedule == '30 18 * * *' && '2') || (github.event.schedule == '30 15 * * *' && '1') || '' }}
           PUBLISH: ${{ inputs.publish }}
-        run: node src/daily.mjs ${EP_ID:+--id "$EP_ID"} $([ "$PUBLISH" = "false" ] && echo --no-publish)
+        run: node src/daily.mjs ${EP_ID:+--id "$EP_ID"} ${SLOT:+--slot "$SLOT"} $([ "$PUBLISH" = "false" ] && echo --no-publish)
       - uses: actions/upload-artifact@v4
         if: always()
-        with: { name: video, path: "out/*", retention-days: 14 }
+        with: { name: "video-${{ github.run_id }}", path: "out/*", retention-days: 14 }
