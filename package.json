@@ -1,0 +1,20 @@
+{
+  "name": "cryptoyar-automotion",
+  "version": "1.0.0",
+  "description": "CryptoYar daily Persian motion-graphics pipeline",
+  "scripts": {
+    "validate": "node src/validate.mjs",
+    "render": "node src/render.mjs",
+    "daily": "node src/daily.mjs",
+    "preview": "node src/daily.mjs --no-publish",
+    "yt-auth": "node src/youtube-auth.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "puppeteer-core": "^25.17.0"
+  },
+  "private": true,
+  "type": "module"
+}

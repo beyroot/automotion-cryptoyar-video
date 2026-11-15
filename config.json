@@ -1,0 +1,53 @@
+{
+  "brand": {
+    "name": "کریپتویار",
+    "handle": "@Cryptoyar_ai_bot",
+    "tagline": "همراه هوشمند تو در بازار کریپتو",
+    "disclaimer": "این محتوا آموزشی است و توصیهٔ مالی نیست.",
+    "keyword": "تحلیل",
+    "replyTitle": "لینک ربات تحلیل AI",
+    "cta": "تحلیل بازار، توی تلگرام"
+  },
+  "tags": {
+    "brand": [
+      "#کریپتویار",
+      "#یار_معامله_گر",
+      "#CryptoYar"
+    ],
+    "general": [
+      "#آموزش_کریپتو",
+      "#ارز_دیجیتال",
+      "#بیت_کوین",
+      "#ترید"
+    ]
+  },
+  "schedule": {
+    "startDate": "2026-11-16",
+    "pulseWeekdays": [
+      5
+    ],
+    "timezone": "Asia/Tehran"
+  },
+  "video": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30
+  },
+  "pulse": {
+    "coins": [
+      "bitcoin",
+      "ethereum",
+      "solana",
+      "binancecoin",
+      "ripple"
+    ]
+  },
+  "youtube": {
+    "privacyStatus": "public",
+    "categoryId": "27"
+  },
+  "instagram": {
+    "apiVersion": "v25.0",
+    "shareToFeed": true
+  }
+}
