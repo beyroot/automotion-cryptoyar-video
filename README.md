@@ -11,15 +11,16 @@
 | `assets/audio/music-viral.mp3` | موسیقی اورجینال برند (همان ترک `insta-motion`) |
 | `src/daily.mjs` | اجرای روزانه: انتخاب اپیزود، رندر، انتشار |
 | `src/pulse.mjs` | اپیزود زندهٔ «نبض بازار» با قیمت واقعی از CoinGecko (جمعه‌ها) |
-| `.github/workflows/daily.yml` | زمان‌بندی: هر روز ۱۹:۰۰ و ۲۲:۰۰ تهران روی GitHub Actions |
+| `.github/workflows/daily.yml` | زمان‌بندی: هر روز ۱۹:۰۰ و ۲۲:۰۰ تهران روی GitHub Actions، بعد ذخیرهٔ کلیپ در ریپو |
+| `clips/YYYY-MM-DD/` | پکیج هر روز (ویدیو، کاور، متادیتا). از `startDate` به بعد، هر روز یک پوشه |
 | `config.json` | نام برند، هندل، تگ‌ها، تاریخ شروع، روزهای نبض بازار |
 
 ## اجرای محلی (ویندوز)
 1. Node 22 و ffmpeg نصب باشد: `winget install OpenJS.NodeJS Gyan.FFmpeg`
 2. `npm install`
 3. `npm run validate` : همهٔ اپیزودها را از نظر طول و جا شدن در قاب چک می‌کند.
-4. `npm run preview` : ویدیوی امروز را بدون انتشار در `out/` می‌سازد.
-5. `npm run render ep07` : یک اپیزود مشخص.
+4. `npm run preview` : ویدیوی امروز را بدون انتشار در `clips/<تاریخ امروز>/` می‌سازد.
+5. `npm run render ep07` : یک اپیزود مشخص، فقط در `out/` (وارد ریپو نمی‌شود).
 
 کروم نصب‌شده روی سیستم استفاده می‌شود. اگر پیدا نشد، `CHROME_PATH` را تنظیم کنید.
 
@@ -27,14 +28,14 @@
 1. این پوشه را در یک ریپوی **خصوصی** گیت‌هاب push کنید.
 2. در Settings → Secrets and variables → Actions این پنج راز را بسازید:
    `YT_CLIENT_ID`، `YT_CLIENT_SECRET`، `YT_REFRESH_TOKEN`، `IG_USER_ID`، `IG_ACCESS_TOKEN`
-3. در تب Actions یک بار دستی اجرا کنید (Run workflow، با `publish=false`) و ویدیو را از Artifacts بگیرید.
+3. در تب Actions یک بار دستی اجرا کنید (Run workflow، با `publish=false`). ویدیو، کاور و متادیتا در `clips/<تاریخ>/` روی همین ریپو کامیت می‌شود.
 4. `startDate` را در `config.json` روی روز شروع بگذارید.
 
 ### یوتوب
 1. در Google Cloud یک پروژه بسازید و YouTube Data API v3 را فعال کنید.
 2. یک OAuth client از نوع Desktop app بسازید.
 3. محلی اجرا کنید: `npm run yt-auth` و با اکانت کانال وارد شوید. خروجی، `YT_REFRESH_TOKEN` است.
-4. **مهم:** تا وقتی پروژهٔ API ممیزی یوتوب (API Compliance Audit) را نگذرانده، هر ویدیویی که با API آپلود شود «خصوصی» قفل می‌شود. فرم ممیزی را همان اول بفرستید. تا تأیید آن، فایل‌های `out/` را دستی در YouTube Studio آپلود و زمان‌بندی کنید (هفته‌ای یک نشست برای ۷ ویدیو).
+4. **مهم:** تا وقتی پروژهٔ API ممیزی یوتوب (API Compliance Audit) را نگذرانده، هر ویدیویی که با API آپلود شود «خصوصی» قفل می‌شود. فرم ممیزی را همان اول بفرستید. تا تأیید آن، فایل‌های `clips/<تاریخ>/` را دستی در YouTube Studio آپلود و زمان‌بندی کنید (هفته‌ای یک نشست برای ۷ ویدیو).
 
 ### اینستاگرام
 1. اکانت اینستاگرام باید Professional (Business یا Creator) و به یک صفحهٔ فیس‌بوک وصل باشد.

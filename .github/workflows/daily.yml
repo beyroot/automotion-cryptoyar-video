@@ -10,12 +10,21 @@ on:
       slot: { description: "نوبت: 1 = ساعت ۱۹، 2 = ساعت ۲۲ (اختیاری)", required: false }
       publish: { description: "منتشر شود؟", type: boolean, default: true }
 
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-clips
+  cancel-in-progress: false
+
 jobs:
   run:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with: { node-version: 22, cache: npm }
       - run: sudo apt-get update && sudo apt-get install -y ffmpeg
@@ -31,6 +40,17 @@ jobs:
           SLOT: ${{ inputs.slot || (github.event.schedule == '30 18 * * *' && '2') || (github.event.schedule == '30 15 * * *' && '1') || '' }}
           PUBLISH: ${{ inputs.publish }}
         run: node src/daily.mjs ${EP_ID:+--id "$EP_ID"} ${SLOT:+--slot "$SLOT"} $([ "$PUBLISH" = "false" ] && echo --no-publish)
-      - uses: actions/upload-artifact@v4
+      - name: Save the day's clips in the repo
         if: always()
-        with: { name: "video-${{ github.run_id }}", path: "out/*", retention-days: 14 }
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add clips
+          if git diff --cached --quiet; then
+            echo "no new clip files"
+            exit 0
+          fi
+          dates=$(git diff --cached --name-only | awk -F/ '/^clips\// {print $2}' | sort -u | paste -sd, -)
+          git commit -m "clips: ${dates}"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
