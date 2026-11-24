@@ -6,7 +6,9 @@
     "disclaimer": "این محتوا آموزشی است و توصیهٔ مالی نیست.",
     "keyword": "تحلیل",
     "replyTitle": "لینک ربات تحلیل AI",
-    "cta": "تحلیل بازار، توی تلگرام"
+    "cta": "تحلیل بازار، توی تلگرام",
+    "voCta": "برای تحلیلِ هوشمندِ بازار، توی کامنت بنویس «تحلیل»، تا لینکِ ربات رو برات بفرستیم!",
+    "voLockup": "کریپتویار؛ همراهِ هوشمندِ تو در بازارِ کریپتو."
   },
   "tags": {
     "brand": [
@@ -54,5 +56,13 @@
   "instagram": {
     "apiVersion": "v25.0",
     "shareToFeed": true
+  },
+  "voice": {
+    "studio": "Higgsfield",
+    "model": "elevenlabs_v4",
+    "voice": "Kevin",
+    "voice_id": "f1373f24-3b96-433f-9a68-e595810ef608",
+    "stability": 0.3,
+    "tempo": 1.15
   }
 }

@@ -35,6 +35,12 @@
   const deco = (seed, d0) => { const r = rnd(seed); return `<div class="deco">` + Array.from({ length: 15 }, (_, i) =>
     `<i class="${r() > 0.45 ? "" : "down"}" style="--h:${50 + Math.round(r() * 150)}px;--d:${(d0 + i * 0.05).toFixed(2)}"></i>`).join("") + `</div>`; };
 
+  // narration pacing: when a scene has a voice line (s.voDur seconds, starting at VO_LEAD), list items appear
+  // when the narrator reaches them. at(s, before, total, fallback) -> seconds, proportional to word counts.
+  const VO_LEAD = 0.2;
+  const at = (s, before, total, fb) => (s.voDur ? +(VO_LEAD + s.voDur * (before / Math.max(1, total)) - 0.15).toFixed(2) : fb);
+  const items = (s) => s.items.map(plain);
+
   // each renderer returns { dur, caps, body (inside .stage > .in), in (card entrance delay), pre (extra html) }
   const R = {
     hook: (s, b, ep) => ({
@@ -46,11 +52,16 @@
       dur: 3.4 + wc(s.text) * 0.3, caps: [{ at: 0.15, text: `*${s.term}* ${s.kicker ? "" : "یعنی چی؟"}`.trim() }],
       body: `<div class="card">${s.kicker ? `<div class="ct">${rich(s.kicker)}</div>` : ""}${s.en ? `<div class="en">${esc(s.en)}</div>` : ""}${a(0.45, "p", rich(s.text))}</div>`,
     }),
-    bullets: (s) => ({
-      dur: 2.8 + s.items.reduce((n, x) => n + wc(x), 0) * 0.3 + s.items.length * 0.4, caps: [{ at: 0.15, text: s.title }],
-      body: `<div class="card" style="padding:26px 40px 40px">` + s.items.map((x, i) =>
-        `<div class="row" style="--d:${(0.5 + i * 0.7).toFixed(2)}"><div class="n">${fa(i + 1)}</div><div class="t">${rich(x)}</div></div>`).join("") + `</div>`,
-    }),
+    bullets: (s) => {
+      const w = items(s).map(wc), head = wc(plain(s.title)) + 1, tot = head + w.reduce((a, b) => a + b, 0);
+      let acc = head;
+      const d = w.map((n, i) => { const v = Math.max(0.5, at(s, acc, tot, 0.5 + i * 0.7)); acc += n; return v; });
+      return {
+        dur: 2.8 + s.items.reduce((n, x) => n + wc(x), 0) * 0.3 + s.items.length * 0.4, caps: [{ at: 0.15, text: s.title }],
+        body: `<div class="card" style="padding:26px 40px 40px">` + s.items.map((x, i) =>
+          `<div class="row" style="--d:${d[i].toFixed(2)}"><div class="n">${fa(i + 1)}</div><div class="t">${rich(x)}</div></div>`).join("") + `</div>`,
+      };
+    },
     number: (s) => ({
       dur: 4.4 + wc(s.note) * 0.25, caps: [{ at: 0.15, text: s.caption || s.label }],
       body: `<div class="card">${s.caption ? `<div class="lab">${rich(s.label)}</div>` : ""}<div class="big ${s.tone || ""}" data-count="${s.value}" data-from="${s.from ?? 0}" data-dec="${s.decimals ?? 0}" data-pre="${esc(s.prefix || "")}" data-suf="${esc(s.suffix || "")}" data-t0="0.35" data-cd="1.5"></div></div>` +
@@ -64,10 +75,11 @@
     }),
     versus: (s) => {
       const side = (x, cls, icon, d) => a(d, `card side ${cls}`, `<div class="tt"><span>${icon}</span>${esc(x.title)}</div><ul>${x.items.map((i) => `<li>${rich(i)}</li>`).join("")}</ul>`);
+      const wb = wc(s.bad.title) + s.bad.items.reduce((n, x) => n + wc(x), 0), wg = wc(s.good.title) + s.good.items.reduce((n, x) => n + wc(x), 0);
       return {
         dur: 3.6 + [...s.bad.items, ...s.good.items].reduce((n, x) => n + wc(x), 0) * 0.3,
         caps: [{ at: 0.15, text: s.title || `${s.bad.title} یا *${s.good.title}*؟` }],
-        body: side(s.bad, "bad", "✕", 0.3) + side(s.good, "good", "✓", 1.3),
+        body: side(s.bad, "bad", "✕", 0.3) + side(s.good, "good", "✓", Math.max(1.3, at(s, wb, wb + wg, 1.3))),
       };
     },
     chart: (s) => {
@@ -89,8 +101,20 @@
           `<circle class="dot" cx="${x(n - 1)}" cy="${y(s.points[n - 1])}" r="15"/></svg></div>` + (s.caption ? a(2.3, "under", rich(s.caption)) : ""),
       };
     },
+    // Telegram-style chat with the brand bot: msgs = [{from: "me"|"bot", text, rows?}]
+    chat: (s, b) => {
+      const n = s.msgs.length, span = s.voDur ? s.voDur * 0.85 : n * 1.1;
+      const d = s.msgs.map((m, i) => +(0.6 + (span - 0.6) * (i / n)).toFixed(2));
+      const msg = (m, i) => `<div class="msg ${m.from}" style="--d:${d[i]}"><div class="bub">${rich(m.text)}` +
+        (m.rows ? `<ul>${m.rows.map((x, k) => `<li style="--d:${(d[i] + 0.35 + k * 0.3).toFixed(2)}">${rich(x)}</li>`).join("")}</ul>` : "") + `</div></div>`;
+      return {
+        dur: 2.4 + n * 1.2, caps: [{ at: 0.15, text: s.title }],
+        body: `<div class="card tg"><div class="head"><img src="../assets/brand/cryptoyar-symbol-gold.svg" alt=""><div><b>${esc(b.name)}</b><small>ربات تلگرام <span dir="ltr">${esc(b.handle)}</span></small></div></div>` +
+          `<div class="msgs">${s.msgs.map(msg).join("")}</div></div>`,
+      };
+    },
     takeaway: (s) => ({
-      dur: 3.2 + wc(s.text) * 0.3, caps: [{ at: 0.15, text: s.kicker || "یادت بمونه" }],
+      dur: 3.2 + wc(s.text) * 0.3, caps: [{ at: 0.15, text: s.kicker ? s.kicker + ": یادت بمونه" : "یادت بمونه" }],
       body: `<div class="card">${a(0.4, "q", rich(s.text))}${deco(wc(s.text) + 11, 0.7)}</div>`,
     }),
     cta: (s, b) => ({
@@ -119,11 +143,13 @@
     dust = Array.from({ length: 60 }, (_, i) => { const d = { x: r() * W, y0: r() * H, v: 0.5 + r() * 1.8, i };
       const c = document.createElementNS("http://www.w3.org/2000/svg", "circle"); c.setAttribute("r", (1.2 + r() * 2.6).toFixed(1)); c.setAttribute("fill", "#ffc21a"); $("dust").appendChild(c); d.el = c; return d; });
 
-    const list = [...ep.scenes, { type: "cta" }, { type: "lockup" }];
+    const end = ep.voEnd || [];
+    const list = [...ep.scenes, { type: "cta", voDur: end[0] }, { type: "lockup", voDur: end[1] }];
     let t = 0;
     scenes = list.map((s) => {
       const q = R[s.type](s, brand, ep);
-      const dur = +(s.dur || q.dur).toFixed(2);
+      // a narrated scene lasts at least as long as its voice line (+ a short breath)
+      const dur = +Math.max(s.dur || q.dur, s.voDur ? VO_LEAD + s.voDur + 0.45 : 0).toFixed(2);
       const el = document.createElement("section");
       el.className = `scene ${s.type}`; el.style.setProperty("--dur", dur);
       el.innerHTML = caption(q.caps, dur) + (q.pre || "") + (q.body ? `<div class="stage"><div class="in" style="--in:${q.in || 0}">${q.body}</div></div>` : "");
@@ -146,7 +172,7 @@
         return h > 1090 || ch > 250 ? { scene: i, type: s.type, card: Math.round(h), cap: ch } : null;
       }).filter(Boolean);
       window.seek(0);
-      return { total, overflow, scenes: scenes.map(({ start, dur, type }) => ({ start, dur, type })) };
+      return { total, overflow, voLead: VO_LEAD, scenes: scenes.map(({ start, dur, type }) => ({ start, dur, type })) };
     });
   };
 

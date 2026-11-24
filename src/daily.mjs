@@ -40,12 +40,12 @@ if (!ep) {
 console.log(`▶ ${today}  slot ${slot} (${slots[slot - 1]})  ${ep.id}  «${ep.title}»`);
 
 const outDir = path.join(ROOT, "clips", today);
-const { out, cover, info } = await renderEpisode(ep, { outDir });
+const { out, cover, info, narrated } = await renderEpisode(ep, { outDir });
 const rel = (p) => path.relative(ROOT, p).split(path.sep).join("/");
 const seriesTag = "#" + ep.series.replace(/[،,.]/g, "").trim().replace(/\s+/g, "_");
 const tags = [...cfg.tags.brand, seriesTag, ...cfg.tags.general];
 const caption = `${ep.title}\n\n${ep.caption}\n\n${cfg.brand.cta}: ${cfg.brand.handle}\n${cfg.brand.disclaimer}\n\n${tags.join(" ")}`;
-const meta = { date: today, slot, id: ep.id, title: ep.title, seconds: +info.total.toFixed(1), file: rel(out), cover: rel(cover), caption, tags, results: {} };
+const meta = { date: today, slot, id: ep.id, title: ep.title, seconds: +info.total.toFixed(1), file: rel(out), cover: rel(cover), narrated, caption, tags, results: {} };
 
 if (!process.argv.includes("--no-publish")) {
   for (const [name, fn] of [

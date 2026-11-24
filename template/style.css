@@ -178,3 +178,19 @@ em { font-style: normal; color: var(--gold); }
 @keyframes wmIn { from { opacity: 0; transform: translateY(18px); filter: blur(10px); } to { opacity: 1; transform: none; filter: blur(0); } }
 .lockup .tag { font-size: 44px; color: var(--gold2); margin-top: 44px; }
 .lockup .disc { font-size: 30px; font-weight: 400; color: var(--muted); margin-top: 26px; }
+
+/* chat: Telegram-style demo of the brand bot */
+.tg { padding: 0; background: #0e1a33; }
+.tg .head { display: flex; align-items: center; gap: 22px; padding: 24px 36px; border-bottom: 1px solid rgba(255,255,255,.08); }
+.tg .head img { width: 84px; height: 84px; padding: 12px; border-radius: 50%; background: #04132d; border: 2px solid rgba(255,194,26,.45); }
+.tg .head b { display: block; font-size: 40px; } .tg .head small { display: block; font-size: 26px; font-weight: 400; color: var(--muted); direction: rtl; }
+.tg .msgs { display: flex; flex-direction: column; gap: 18px; padding: 30px 30px 36px; min-height: 560px; }
+.tg .msg { display: flex; animation: up .45s var(--spring) both; animation-delay: calc(var(--d) * 1s); }
+.tg .msg.me { justify-content: flex-start; } .tg .msg.bot { justify-content: flex-end; }
+.tg .bub { max-width: 640px; padding: 20px 30px; border-radius: 30px; font-size: 40px; line-height: 1.55; }
+.tg .me .bub { background: linear-gradient(180deg, var(--gold2), var(--gold)); color: #1a1300; border-bottom-right-radius: 8px; }
+.tg .bot .bub { background: #1b2b4d; color: #e6ecf8; border-bottom-left-radius: 8px; }
+.tg .bot .bub em { color: var(--gold); }
+.tg .bub ul { margin-top: 12px; }
+.tg .bub li { list-style: none; font-weight: 400; font-size: 38px; animation: up .4s var(--ease-out) both; animation-delay: calc(var(--d) * 1s); }
+.tg .bub li::before { content: "✓ "; color: var(--green); font-weight: 700; }
