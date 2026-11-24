@@ -92,3 +92,7 @@ mark::before { content: ""; position: absolute; z-index: -1; right: -8px; top: 1
 /* code-drawn paper collage (art.js): backdrop + one svg per cut-out piece */
 .scene svg.img { object-fit: initial; }
 .scene svg.art { position: absolute; left: 0; top: 0; will-change: transform, opacity; overflow: visible; }
+
+/* overlays and the brand tag sit above every scene sheet */
+.grain, .halftone { z-index: 9; }
+.tag { z-index: 10; }
