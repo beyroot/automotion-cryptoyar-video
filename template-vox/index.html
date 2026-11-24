@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="vox.css">
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="4"/><feColorMatrix values="0 0 0 0 .45  0 0 0 0 .38  0 0 0 0 .28  0 0 0 .55 0"/></filter>
+</svg>
+<div id="stage"></div>
+<div class="grain"><svg width="1080" height="1920"><rect width="100%" height="100%" filter="url(#grain)"/></svg></div>
+<div class="halftone"></div>
+<div class="tag" id="tag"><img src="../assets/brand/cryptoyar-symbol-gold.svg" alt=""><span><b id="brandName"></b><small id="handle"></small></span></div>
+<script src="art.js"></script>
+<script src="vox.js"></script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+name: CryptoYar vox render (test branch only)
+
+# Renders the Vox paper-cutout version of one episode on claude/vox-* branches.
+# Never publishes anywhere and uses no secrets. Output is committed back to the same branch under out-vox/.
+on:
+  push:
+    branches: ["claude/vox-**"]
+    paths: ["template-vox/**", "src/**", "content/**", "assets/**", ".github/workflows/vox-render.yml", "vox-job.json"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: vox-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - run: npm ci
+      - name: Render (job spec in vox-job.json)
+        run: |
+          ID=$(node -p "require('./vox-job.json').id")
+          FRAMES=$(node -p "require('./vox-job.json').frames || ''")
+          FULL=$(node -p "require('./vox-job.json').full ? 1 : 0")
+          [ -n "$FRAMES" ] && node src/render-vox.mjs "$ID" --frames "$FRAMES"
+          [ "$FULL" = "1" ] && node src/render-vox.mjs "$ID"
+          ls -la out-vox/*
+      - uses: actions/upload-artifact@v4
+        with: { name: vox-out, path: out-vox/, retention-days: 7 }
+      - name: Commit output to this branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f out-vox
+          git diff --cached --quiet && exit 0
+          git commit -m "vox render output [skip ci]"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
