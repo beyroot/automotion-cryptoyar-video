@@ -1,0 +1,98 @@
+/* CryptoYar · Vox paper-cutout template.
+   Text-free AI frames (assets/vox/<ep>/sNN.jpg) + Persian text typeset here on torn paper strips.
+   Palette: warm off-white + muted teal, yellow marker for *keywords*, brand gold only for the logo. */
+@font-face {
+  font-family: "Vazirmatn";
+  src: url("../assets/fonts/Vazirmatn-Variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: block;
+}
+:root {
+  --paper: #f5efe1; --paper2: #ebe2cd; --ink: #16333a; --teal: #2e6a6c; --teal2: #1f4f52;
+  --marker: rgba(255, 213, 0, .82); --red: #c8362f; --green: #2f8f5b; --gold: #ffc21a;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 1080px; height: 1920px; overflow: hidden; background: #e9e1cf; color: var(--ink);
+  font-family: "Vazirmatn", sans-serif; direction: rtl; }
+
+/* one scene = one sheet of paper that slides over the previous one */
+.scene { position: absolute; inset: 0; visibility: hidden; overflow: hidden; will-change: transform;
+  box-shadow: 30px 0 60px rgba(0,0,0,.35); background: var(--paper2); }
+.scene .img { position: absolute; left: -40px; top: -60px; width: 1160px; height: 2040px; object-fit: cover; transform-origin: 50% 45%; }
+.scene .shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(20,30,30,.10), transparent 30%, transparent 70%, rgba(20,30,30,.18)); }
+.scene .layer { position: absolute; inset: 0; }
+
+/* overlays on top of everything (static) */
+.grain { position: absolute; inset: 0; opacity: .22; mix-blend-mode: multiply; pointer-events: none; }
+.halftone { position: absolute; inset: 0; pointer-events: none; opacity: .07; mix-blend-mode: multiply;
+  background-image: radial-gradient(#000 1.3px, transparent 1.6px); background-size: 9px 9px; }
+
+/* torn paper strip: wrapper carries the shadow, inner carries the jagged clip */
+.sw { position: absolute; left: 0; right: 0; display: flex; justify-content: center; will-change: transform, opacity;
+  filter: drop-shadow(0 6px 0 rgba(40,30,15,.16)) drop-shadow(0 16px 18px rgba(30,20,10,.28)); }
+.strip { background: var(--paper); color: var(--ink); font-weight: 800; padding: 18px 44px 22px; max-width: 940px;
+  text-align: center; line-height: 1.55; font-size: 54px; position: relative; }
+.strip::after { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .5;
+  background: repeating-linear-gradient(0deg, transparent 0 46px, rgba(46,106,108,.10) 46px 48px); }
+.strip.teal { background: var(--teal); color: var(--paper); }
+.strip.teal::after, .strip.big::after, .strip.tape::after { display: none; }
+.strip.big { font-size: 88px; font-weight: 900; line-height: 1.4; padding: 26px 50px 32px; }
+.strip.mid { font-size: 66px; font-weight: 900; }
+.strip.small { font-size: 40px; font-weight: 700; padding: 12px 34px 16px; }
+.strip.en { font-family: "Vazirmatn", sans-serif; direction: ltr; letter-spacing: .28em; font-size: 32px; font-weight: 700;
+  background: var(--ink); color: var(--paper); padding: 10px 30px 12px; }
+.strip.tape { background: rgba(255, 238, 170, .92); font-size: 36px; padding: 8px 40px 12px; font-weight: 800; }
+.strip.bad { border-right: 18px solid var(--red); }
+.strip.good { border-right: 18px solid var(--green); }
+
+/* yellow marker swipe on *keywords* (width driven from seek via --m) */
+mark { background: none; color: inherit; position: relative; z-index: 0; white-space: nowrap; }
+mark::before { content: ""; position: absolute; z-index: -1; right: -8px; top: 18%; height: 70%;
+  width: calc((100% + 16px) * var(--m, 0)); background: var(--marker); border-radius: 6px 14px 8px 12px;
+  transform: rotate(-1.2deg); }
+.teal mark::before { background: rgba(255, 213, 0, .9); }
+.teal mark { color: var(--ink); }
+
+/* stamps (cut-paper circles) */
+.stamp { position: absolute; width: 150px; height: 150px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 92px; font-weight: 900; color: #fff; will-change: transform, opacity;
+  filter: drop-shadow(0 6px 0 rgba(0,0,0,.15)) drop-shadow(0 12px 14px rgba(0,0,0,.25)); }
+.stamp.x { background: var(--red); } .stamp.ok { background: var(--green); }
+
+/* big cut-paper glyph tiles (24/7) */
+.tiles { position: absolute; left: 0; right: 0; display: flex; justify-content: center; gap: 14px; direction: ltr; }
+.tile { width: 170px; height: 230px; background: var(--teal); color: var(--paper); font-size: 190px; font-weight: 900; line-height: 230px;
+  text-align: center; will-change: transform, opacity; filter: drop-shadow(0 8px 0 rgba(0,0,0,.16)) drop-shadow(0 16px 18px rgba(0,0,0,.28)); }
+.tile:nth-child(even) { background: var(--paper); color: var(--teal); }
+
+/* CTA comment bubble */
+.bubble { position: absolute; left: 140px; right: 140px; background: #fff; border-radius: 46px 46px 46px 10px; padding: 34px 44px;
+  font-size: 64px; font-weight: 900; color: var(--ink); display: flex; align-items: center; gap: 18px; min-height: 150px;
+  filter: drop-shadow(0 8px 0 rgba(0,0,0,.14)) drop-shadow(0 18px 22px rgba(0,0,0,.25)); will-change: transform, opacity; }
+.bubble .ph { color: #9aa7a8; font-weight: 500; font-size: 44px; }
+.bubble .cur { width: 6px; height: 64px; background: var(--teal); }
+.bubble .send { margin-right: auto; width: 96px; height: 96px; border-radius: 50%; background: var(--teal); color: #fff;
+  display: flex; align-items: center; justify-content: center; font-size: 52px; }
+
+/* lockup card */
+.lock { position: absolute; left: 110px; right: 110px; top: 560px; background: var(--paper); padding: 80px 60px 70px; text-align: center;
+  filter: drop-shadow(0 10px 0 rgba(0,0,0,.16)) drop-shadow(0 26px 30px rgba(0,0,0,.35)); will-change: transform, opacity; }
+.lock .sym { width: 300px; height: auto; filter: drop-shadow(0 3px 0 rgba(0,0,0,.25)); }
+.lock .wm { display: block; width: 520px; margin: 30px auto 0; background: var(--ink); padding: 26px 36px; }
+.lock .tl { margin-top: 36px; font-size: 46px; font-weight: 800; color: var(--teal2); }
+.lock .disc { margin-top: 30px; font-size: 32px; font-weight: 500; color: #6a6250; }
+
+/* persistent brand tag (logo + page tag) */
+.tag { position: absolute; left: 44px; bottom: 70px; display: flex; align-items: center; gap: 16px; background: var(--ink);
+  padding: 14px 26px 14px 22px; transform: rotate(1.5deg); filter: drop-shadow(0 6px 10px rgba(0,0,0,.35)); }
+.tag img { width: 70px; }
+.tag b { display: block; color: var(--gold); font-size: 34px; font-weight: 900; line-height: 1.1; }
+.tag small { display: block; color: var(--paper); font-size: 22px; font-weight: 500; direction: ltr; text-align: right; }
+
+/* code-drawn paper collage (art.js): backdrop + one svg per cut-out piece */
+.scene svg.img { object-fit: initial; }
+.scene svg.art { position: absolute; left: 0; top: 0; will-change: transform, opacity; overflow: visible; }
+
+/* overlays and the brand tag sit above every scene sheet */
+.grain, .halftone { z-index: 9; }
+.tag { z-index: 10; }
