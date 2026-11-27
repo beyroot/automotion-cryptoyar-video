@@ -1,0 +1,28 @@
+{
+  "date": "2026-11-27",
+  "slot": 2,
+  "id": "pulse-2026-11-27",
+  "title": "نبض بازار، ۶ آذر",
+  "seconds": 31.5,
+  "file": "clips/2026-11-27/pulse-2026-11-27.mp4",
+  "cover": "clips/2026-11-27/pulse-2026-11-27.jpg",
+  "caption": "نبض بازار، ۶ آذر\n\nنبض بازار در ۶ آذر: BTC -0.2% · ETH -0.1% · SOL +0.7% · BNB -0.1% · XRP +0.0%\nمنبع قیمت: CoinGecko\n\nتحلیل بازار، توی تلگرام: @Cryptoyar_ai_bot\nاین محتوا آموزشی است و توصیهٔ مالی نیست.\n\n#کریپتویار #یار_معامله_گر #CryptoYar #نبض_بازار #آموزش_کریپتو #ارز_دیجیتال #بیت_کوین #ترید",
+  "tags": [
+    "#کریپتویار",
+    "#یار_معامله_گر",
+    "#CryptoYar",
+    "#نبض_بازار",
+    "#آموزش_کریپتو",
+    "#ارز_دیجیتال",
+    "#بیت_کوین",
+    "#ترید"
+  ],
+  "results": {
+    "youtube": {
+      "error": "YouTube token: {\"error\":\"invalid_client\",\"error_description\":\"The OAuth client was not found.\"}"
+    },
+    "instagram": {
+      "skipped": "کلیدهای اینستاگرام تنظیم نشده"
+    }
+  }
+}
