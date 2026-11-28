@@ -5,6 +5,7 @@ import { spawn, spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { voFor } from "./voice.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const cfg = JSON.parse(fs.readFileSync(path.join(ROOT, "config.json"), "utf8"));
@@ -43,7 +44,10 @@ export async function renderEpisode(ep, { frames = null, outDir = path.join(ROOT
     const page = await browser.newPage();
     await page.setViewport({ width, height, deviceScaleFactor: 1 });
     await page.goto(pathToFileURL(path.join(ROOT, "template", "index.html")).href);
-    const info = await page.evaluate((e, b) => window.build(e, b), ep, cfg.brand);
+    // narration (assets/vo/<id>/sNN.m4a): scenes stretch to fit their voice line
+    const vo = voFor(ep);
+    const epx = vo ? { ...ep, scenes: ep.scenes.map((s, i) => (vo.scenes[i] ? { ...s, voDur: vo.scenes[i].dur } : s)), voEnd: vo.end.map((x) => x?.dur) } : ep;
+    const info = await page.evaluate((e, b) => window.build(e, b), epx, cfg.brand);
     const shot = async (t) => {
       await page.evaluate((x) => window.seek(x), t);
       return page.screenshot({ type: "jpeg", quality: 92, optimizeForSpeed: true });
@@ -87,7 +91,9 @@ export async function renderEpisode(ep, { frames = null, outDir = path.join(ROOT
     const out = path.join(outDir, `${ep.id}.mp4`);
     // brand music (original track from insta-motion), looped to length, faded at both ends
     const music = path.join(ROOT, "assets", "audio", "music-viral.mp3");
-    if (fs.existsSync(music)) {
+    if (vo && fs.existsSync(music)) {
+      mixNarrated({ silent, music, vo, info, out });
+    } else if (fs.existsSync(music)) {
       const T = info.total;
       ff(["-i", silent, "-stream_loop", "-1", "-i", music, "-filter_complex",
         `[1:a]atrim=0:${T},volume=0.6,afade=t=in:d=0.27,afade=t=out:st=${(T - 0.8).toFixed(2)}:d=0.8[a]`,
@@ -96,10 +102,41 @@ export async function renderEpisode(ep, { frames = null, outDir = path.join(ROOT
       ff(["-i", silent, "-c", "copy", "-movflags", "+faststart", out]);
     }
     fs.rmSync(tmp, { recursive: true, force: true });
-    return { info, out, cover };
+    return { info, out, cover, narrated: !!vo };
   } finally {
     await browser.close();
   }
+}
+
+// Narrated mix: voice lines on their scenes, brand music ducked under the voice (sidechain),
+// soft whoosh on scene changes + sparkle on the logo, then -14 LUFS for Reels/Shorts.
+// Effects stay well under the voice (Jobs- rule: SFX may never cover the narration).
+function mixNarrated({ silent, music, vo, info, out }) {
+  const T = info.total, lead = info.voLead ?? 0.2;
+  const sfx = (n) => path.join(ROOT, "assets", "sfx", n);
+  const inputs = ["-i", silent, "-stream_loop", "-1", "-i", music];
+  const f = [], voTags = [], fxTags = [];
+  let k = 2;
+  const lines = [...vo.scenes, ...vo.end];
+  info.scenes.forEach((sc, i) => {
+    const v = lines[i];
+    if (v) {
+      inputs.push("-i", v.file);
+      f.push(`[${k}:a]adelay=delays=${Math.round((sc.start + lead) * 1000)}:all=1[v${k}]`); voTags.push(`[v${k}]`); k++;
+    }
+    const fx = sc.type === "lockup" ? ["sparkle.wav", 0.16, 0.1] : i > 0 ? ["whoosh.wav", 0.13, -0.18] : null;
+    if (fx && fs.existsSync(sfx(fx[0]))) {
+      inputs.push("-i", sfx(fx[0]));
+      f.push(`[${k}:a]volume=${fx[1]},adelay=delays=${Math.max(0, Math.round((sc.start + fx[2]) * 1000))}:all=1[x${k}]`); fxTags.push(`[x${k}]`); k++;
+    }
+  });
+  f.push(`${voTags.join("")}amix=inputs=${voTags.length}:normalize=0,asplit[vo][key]`);
+  f.push(`[1:a]atrim=0:${T},volume=0.42,afade=t=in:d=0.27,afade=t=out:st=${(T - 0.8).toFixed(2)}:d=0.8[m]`);
+  f.push(`[m][key]sidechaincompress=threshold=0.02:ratio=7:attack=20:release=380[md]`);
+  const parts = ["[md]", "[vo]", ...fxTags];
+  f.push(`${parts.join("")}amix=inputs=${parts.length}:normalize=0,loudnorm=I=-14:TP=-1.5:LRA=11,aresample=48000,atrim=0:${T}[a]`);
+  ff([...inputs, "-filter_complex", f.join(";"), "-map", "0:v", "-map", "[a]", "-c:v", "copy", "-c:a", "aac", "-b:a", "192k",
+    "-t", T.toFixed(2), "-movflags", "+faststart", out]);
 }
 
 // CLI: node src/render.mjs <episodeId> [--frames 1,5,9]
